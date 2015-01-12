@@ -16,7 +16,7 @@
 
 package com.github.mauricio.async.db.postgresql
 
-import com.github.mauricio.async.db.QueryResult
+import com.github.mauricio.async.db.{ChunkedBlob, QueryResult, Configuration, Connection}
 import com.github.mauricio.async.db.column.{ColumnEncoderRegistry, ColumnDecoderRegistry}
 import com.github.mauricio.async.db.exceptions.{InsufficientParametersException, ConnectionStillRunningQueryException}
 import com.github.mauricio.async.db.general.MutableResultSet
@@ -24,7 +24,6 @@ import com.github.mauricio.async.db.postgresql.codec.{PostgreSQLConnectionDelega
 import com.github.mauricio.async.db.postgresql.column.{PostgreSQLColumnDecoderRegistry, PostgreSQLColumnEncoderRegistry}
 import com.github.mauricio.async.db.postgresql.exceptions._
 import com.github.mauricio.async.db.util._
-import com.github.mauricio.async.db.{Configuration, Connection}
 import java.util.concurrent.atomic.{AtomicLong,AtomicInteger,AtomicReference}
 import messages.backend._
 import messages.frontend._
@@ -133,6 +132,9 @@ class PostgreSQLConnection
 
     promise.future
   }
+
+  // TODO implement this
+  override def sendPreparedStatementWithBlob(query: String, values: Seq[Any]): Future[ChunkedBlob] = ???
 
   override def onError( exception : Throwable ) {
     this.setErrorOnFutures(exception)

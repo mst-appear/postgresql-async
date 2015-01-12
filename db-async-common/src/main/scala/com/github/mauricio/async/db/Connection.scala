@@ -117,6 +117,27 @@ trait Connection {
 
   /**
    *
+   * Sends a prepared statement to the database with a chunked BLOB.
+   *
+   * The query string have to include at least one ? sign, and the first one will be the BLOB, and remaining ones are
+   * set by the 'values' parameter. As in:
+   *
+   * {{{
+   *  connection.sendPreparedStatementWithBlob( "UPDATE USERS SET picture = ? WHERE login = ?", Array( "john-doe" ) ) flatMap { blob =>
+   *    blob.write(data1)
+   *  } flatMap { blob =>
+   *    blob.write(data2)
+   *  } flatMap { blob =>
+   *    blob.close()
+   *  } map { queryResult =>
+   *    // handle query result here
+   *  }
+   * }}}
+   */
+  def sendPreparedStatementWithBlob(query: String, values: Seq[Any] = List()): Future[ChunkedBlob]
+
+  /**
+   *
    * Executes an (asynchronous) function within a transaction block.
    * If the function completes successfully, the transaction is committed, otherwise it is aborted.
    *

@@ -240,6 +240,8 @@ class MySQLConnection(
     promise.future
   }
 
+  // TODO implement this
+  def sendPreparedStatementWithBlob(query: String, values: Seq[Any]): Future[ChunkedBlob] = ???
 
   override def toString: String = {
     "%s(%s,%d)".format(this.getClass.getName, this.connectionId, this.connectionCount)

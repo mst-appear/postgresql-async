@@ -17,7 +17,8 @@
 package com.github.mauricio.async.db.pool
 
 import com.github.mauricio.async.db.util.ExecutorServiceUtils
-import com.github.mauricio.async.db.{QueryResult, Connection}
+import com.github.mauricio.async.db.{ChunkedBlob, Connection, QueryResult}
+
 import scala.concurrent.{ExecutionContext, Future}
 
 /**
@@ -94,6 +95,29 @@ class ConnectionPool[T <: Connection](
 
   def sendPreparedStatement(query: String, values: Seq[Any] = List()): Future[QueryResult] =
     this.use(_.sendPreparedStatement(query, values))(executionContext)
+
+  /**
+   *
+   * Picks one connection and runs this query against it. The query should be stateless, it should not
+   * start transactions and should not leave anything to be cleaned up in the future. The behavior of this
+   * object is undefined if you start a transaction from this method.
+   *
+   * @param query
+   * @param values
+   * @return
+   */
+  // TODO do not giveBack connection until the blob is finished
+  def sendPreparedStatementWithBlob(query: String, values: Seq[Any]): Future[ChunkedBlob] = {
+    implicit val _executionContext: ExecutionContext = executionContext
+    take.flatMap { item =>
+      item.sendPreparedStatementWithBlob(query, values) recoverWith {
+        case error => giveBack(item).flatMap(_ => Future.failed(error))
+      } flatMap { res =>
+        giveBack(item).map { _ => res}
+      }
+    }
+  }
+
 
   /**
    *
